@@ -6,6 +6,10 @@ const { Pool } = pkg;
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.get('/', (req, res) => {
+  res.send('Application Heroku + PostgreSQL ✅');
+});
+
 // Connexion à la base Heroku
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -15,7 +19,7 @@ const pool = new Pool({
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // --- Page liste des contacts ---
-app.get("contact", async (req, res) => {
+app.get("/contact", async (req, res) => {
   const result = await pool.query("SELECT sfid, firstname, lastname, email FROM salesforce.contact ORDER BY lastname ASC LIMIT 20");
   let html = `<h2>Liste des contacts</h2><ul>`;
   result.rows.forEach((c) => {
@@ -27,7 +31,7 @@ app.get("contact", async (req, res) => {
 });
 
 // --- Page de modification d’un contact ---
-app.get("edit/:sfid", async (req, res) => {
+app.get("/edit/:sfid", async (req, res) => {
   const { sfid } = req.params;
   const result = await pool.query("SELECT sfid, firstname, lastname, email FROM salesforce.contact WHERE sfid = $1", [sfid]);
   const c = result.rows[0];
@@ -45,7 +49,7 @@ app.get("edit/:sfid", async (req, res) => {
 });
 
 // --- Traitement du formulaire ---
-app.post("edit/:sfid", async (req, res) => {
+app.post("/edit/:sfid", async (req, res) => {
   const { sfid } = req.params;
   const { firstname, lastname, email } = req.body;
   await pool.query(
