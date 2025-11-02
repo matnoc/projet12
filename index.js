@@ -21,7 +21,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // --- Page liste des contacts ---
 app.get("/contact", async (req, res) => {
   const result = await pool.query("SELECT sfid, firstname, lastname, email FROM salesforce.contact ORDER BY lastname ASC LIMIT 20");
-  let html = `<h2>Liste des contacts</h2><ul>`;
+  let html = `<h2>Liste des contact</h2><ul>`;
   result.rows.forEach((c) => {
     html += `<li>${c.firstname || ""} ${c.lastname || ""} 
       (<a href="/edit/${c.sfid}">Modifier</a>)</li>`;
@@ -44,7 +44,7 @@ app.get("/edit/:sfid", async (req, res) => {
       <label>Email :</label><input name="email" value="${c.email || ""}" /><br/>
       <button type="submit">Enregistrer</button>
     </form>
-    <p><a href="/contacts">Retour</a></p>
+    <p><a href="/contact">Retour</a></p>
   `);
 });
 
@@ -56,7 +56,7 @@ app.post("/edit/:sfid", async (req, res) => {
     "UPDATE salesforce.contact SET firstname = $1, lastname = $2, email = $3 WHERE sfid = $4",
     [firstname, lastname, email, sfid]
   );
-  res.redirect("/contacts");
+  res.redirect("/contact");
 });
 
 app.listen(port, () => console.log(`✅ App en ligne sur port ${port}`));
