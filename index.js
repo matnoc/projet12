@@ -1,4 +1,3 @@
-import bodyParser from "body-parser";
 import express from "express";
 import pkg from "pg";
 
@@ -16,7 +15,7 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-app.use(bodyParser.urlencoded({ extended: true }));
+//app.use(bodyParser.urlencoded({ extended: true }));
 
 // --- Page liste des contacts ---
 app.get("/contacts", async (req, res) => {
