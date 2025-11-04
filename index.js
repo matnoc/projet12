@@ -53,7 +53,7 @@ app.get("/edit/:sfid", async (req, res) => {
       <label>Email :</label><input name="email" value="${c.email || ""}" /><br/>
       <button type="submit">Enregistrer</button>
     </form>
-    <p><a href="/contact">Retour</a></p>
+    <p><a href="/contacts">Retour</a></p>
   `);
 });
 
