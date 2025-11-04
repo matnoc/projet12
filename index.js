@@ -6,7 +6,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
-  res.send('Application Heroku + PostgreSQL ✅');
+  res.sendFile("index.html", { root: "public" });
 });
 
 // Connexion à la base Heroku
@@ -16,6 +16,16 @@ const pool = new Pool({
 });
 
 //app.use(bodyParser.urlencoded({ extended: true }));
+
+
+app.get("/produit", async (req, res)=>{
+
+})
+
+app.get("/contract", async (req, res)=>{
+
+})
+
 
 // --- Page liste des contacts ---
 app.get("/contacts", async (req, res) => {
