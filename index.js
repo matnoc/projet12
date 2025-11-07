@@ -30,7 +30,7 @@ app.get("/contract", async (req, res)=>{
 // --- Page liste des contacts ---
 app.get("/contacts", async (req, res) => {
   const result = await pool.query("SELECT sfid, firstname, lastname, email FROM salesforce.contact ORDER BY lastname ASC LIMIT 20");
-  let html = `<h2>Liste des contact</h2><ul>`;
+  let html = `<h2>Liste des contacts</h2><ul>`;
   result.rows.forEach((c) => {
     html += `<li>${c.firstname || ""} ${c.lastname || ""} 
       (<a href="/edit/${c.sfid}">Modifier</a>)</li>`;
