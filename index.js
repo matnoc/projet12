@@ -21,6 +21,7 @@ app.get("/", (req, res) => {
 
 // --- Page liste des contacts ---
 app.get("/profile/:sfid", async (req, res) => {
+  const { sfid } = req.params;
   const result = await pool.query("SELECT sfid, firstname, lastname, email, password__c, AssistantPhone, Birthdate, AccountId, MailingAddress, Title  FROM salesforce.contact WHERE sfid =$1", [sfid]);
   res.send(`
     <h2>Liste des contacts</h2>
