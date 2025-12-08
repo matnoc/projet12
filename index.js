@@ -23,10 +23,8 @@ app.get("/", (req, res) => {
 app.get("/profile/:sfid", async (req, res) => {
   const result = await pool.query("SELECT sfid, firstname, lastname, email, password__c, AssistantPhone, Birthdate, AccountId, MailingAddress, Title  FROM salesforce.contact WHERE sfid =$1", [sfid]);
   let html = `<h2>Liste des contacts</h2><ul>`;
-
-    html += `<li>${c.firstname || ""} ${c.lastname || ""} 
-      (<a href="/edit/${c.sfid}">Modifier</a>)</li>`;
-
+    html += `<li>${result.firstname || ""} ${result.lastname || ""} 
+      (<a href="/edit/${result.sfid}">Modifier</a>)</li>`;
   html += `</ul>
   <p><a href="/">⬅️ Retour à l'accueil</a></p>`;
   res.send(html);
@@ -110,7 +108,7 @@ app.get("/register", (req, res) => {
       <label>Email :</label>
       <input name="email" type="email" required /><br/>
 
-      <label>Nom d'utilisateur (HerokuExternalID__c) :</label>
+      <label>Nom d'utilisateur (herokuexternalid__c) :</label>
       <input name="username" required /><br/>
 
       <label>Mot de passe :</label>
@@ -138,9 +136,9 @@ app.post("/register", async (req, res) => {
       return res.redirect("/register?error=" + encodeURIComponent("Email déjà utilisé"));
     }
 
-    // Vérifier username/HerokuExternalID__c
+    // Vérifier username/herokuexternalid__c
     const sfidCheck = await pool.query(
-      "SELECT id FROM salesforce.contact WHERE HerokuExternalID__c = $1",
+      "SELECT id FROM salesforce.contact WHERE herokuexternalid__c = $1",
       [username]
     );
 
@@ -179,7 +177,7 @@ app.get("/login", async (req, res) => {
       ${error ? `<p style="color:red;">${error}</p>` : ""}
 
       <form method="GET" action="/login">
-        <label>Nom d'utilisateur (SFID) :</label>
+        <label>Nom d'utilisateur (herokuexternalid__c) :</label>
         <input name="username" required /><br/>
 
         <label>Mot de passe :</label>
@@ -195,7 +193,7 @@ app.get("/login", async (req, res) => {
   // Sinon → vérifier les identifiants
   try {
     const result = await pool.query(
-      "SELECT sfid, password__c, HerokuExternalID__c FROM salesforce.contact WHERE HerokuExternalID__c = $1 AND password__c = $2",
+      "SELECT sfid, password__c, herokuexternalid__c FROM salesforce.contact WHERE herokuexternalid__c = $1 AND password__c = $2",
       [username, password]
     );
 
@@ -204,7 +202,7 @@ app.get("/login", async (req, res) => {
       error = "Identifiants incorrects";
     } else {
         // Connexion OK
-        return res.redirect(`/profile/${user.sfid}`);
+        return res.redirect(`/profile/${result.sfid}`);
       }
     
 
