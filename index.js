@@ -110,7 +110,7 @@ app.get("/register", (req, res) => {
       <label>Email :</label>
       <input name="email" type="email" required /><br/>
 
-      <label>Nom d'utilisateur (SFID) :</label>
+      <label>Nom d'utilisateur (HerokuExternalID__c) :</label>
       <input name="username" required /><br/>
 
       <label>Mot de passe :</label>
@@ -138,9 +138,9 @@ app.post("/register", async (req, res) => {
       return res.redirect("/register?error=" + encodeURIComponent("Email déjà utilisé"));
     }
 
-    // Vérifier username/SFID
+    // Vérifier username/HerokuExternalID__c
     const sfidCheck = await pool.query(
-      "SELECT id FROM salesforce.contact WHERE sfid = $1",
+      "SELECT id FROM salesforce.contact WHERE HerokuExternalID__c = $1",
       [username]
     );
 
@@ -195,7 +195,7 @@ app.get("/login", async (req, res) => {
   // Sinon → vérifier les identifiants
   try {
     const result = await pool.query(
-      "SELECT sfid, password__c FROM salesforce.contact WHERE sfid = $1 AND password__c = $2",
+      "SELECT sfid, password__c, HerokuExternalID__c FROM salesforce.contact WHERE HerokuExternalID__c = $1 AND password__c = $2",
       [username, password]
     );
 
