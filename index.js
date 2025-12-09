@@ -199,11 +199,11 @@ app.get("/login", async (req, res) => {
     );
 
     // Aucun utilisateur trouvé
-    if (result.rows.length == 0) {
+    if (result.length == 0) {
       error = "Identifiants incorrects";
     } else {
         // Connexion OK
-        return res.redirect(`/profile/${result.herokuexternalid__c}`);
+        return res.redirect(`/profile/${username}`);
       }
     
 
