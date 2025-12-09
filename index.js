@@ -20,9 +20,9 @@ app.get("/", (req, res) => {
 });
 
 // --- Page liste des contacts ---
-app.get("/profile/:sfid", async (req, res) => {
-  const { sfid } = req.params;
-  const result = await pool.query("SELECT sfid, firstname, lastname, email, password__c, Birthdate  FROM salesforce.contact WHERE sfid =$1", [sfid]);
+app.get("/profile/:herokuexternalid__c", async (req, res) => {
+  const { herokuexternalid__c } = req.params;
+  const result = await pool.query("SELECT sfid, firstname, lastname, email, password__c, Birthdate  FROM salesforce.contact WHERE herokuexternalid__c =$1", [herokuexternalid__c]);
   res.send(`
     <h2>Liste des contacts</h2>
     <li>${result.firstname || ""} ${result.lastname || ""}
@@ -203,7 +203,7 @@ app.get("/login", async (req, res) => {
       error = "Identifiants incorrects";
     } else {
         // Connexion OK
-        return res.redirect(`/profile/${result.sfid}`);
+        return res.redirect(`/profile/${result.herokuexternalid__c}`);
       }
     
 
