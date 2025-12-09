@@ -22,13 +22,13 @@ app.get("/", (req, res) => {
 // --- Page liste des contacts ---
 app.get("/profile/:herokuexternalid__c", async (req, res) => {
   const { herokuexternalid__c } = req.params;
-  const result = await pool.query("SELECT sfid, firstname, lastname, email, password__c, Birthdate  FROM salesforce.contact WHERE herokuexternalid__c =$1", [herokuexternalid__c]);
+  const result = await pool.query("SELECT sfid, firstname, lastname, email, password__c, Birthdate, phone  FROM salesforce.contact WHERE herokuexternalid__c =$1", [herokuexternalid__c]);
   const c = result.rows[0];
   if (!c) return res.send("Contact non trouvé");
   res.send(`
     <h2>Liste des contacts</h2>
-    <li>${c.firstname || ""} ${c.lastname || ""}
-    (<a href="/edit/${c.sfid}">Modifier</a>)</li>
+    <p>Prenom : ${c.firstname || ""} </n>Nom : ${c.lastname || ""}</n>Email : ${c.email || ""}</n>Anniversaire : ${c.birthdate || ""}</n>Telephone : ${c.phone || ""}</n>
+    (<a href="/edit/${c.sfid}">Modifier</a>)</p>
     <p><a href="/">⬅️ Retour à l'accueil</a></p>
     `);
 });
