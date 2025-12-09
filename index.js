@@ -27,7 +27,7 @@ app.get("/profile/:herokuexternalid__c", async (req, res) => {
   if (!c) return res.send("Contact non trouvé");
   res.send(`
     <h2>Liste des contacts</h2>
-    <p>Prenom : ${c.firstname || ""} </n>Nom : ${c.lastname || ""}</n>Email : ${c.email || ""}</n>Anniversaire : ${c.birthdate || ""}</n>Telephone : ${c.phone || ""}</n>
+    <p>Prenom : ${c.firstname || ""} <br>Nom : ${c.lastname || ""}<br>Email : ${c.email || ""}<br>Telephone : ${c.phone || ""}<br>
     (<a href="/edit/${c.sfid}">Modifier</a>)</p>
     <p><a href="/">⬅️ Retour à l'accueil</a></p>
     `);
