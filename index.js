@@ -88,7 +88,7 @@ app.get("/produit", async (req, res) => {
 // --- Page liste des contrats ---
 app.get("/contract/:sfid", async (req, res) => {
    const { sfid } = req.params;
-  const result = await pool.query("SELECT sfid, contractnumber, startdate, enddate FROM salesforce.contract ORDER BY startdate DESC WHERE CustomerSignedId = $1",[sfid]);
+  const result = await pool.query("SELECT contractnumber, startdate, enddate FROM salesforce.contract WHERE CustomerSignedId = $1",[sfid]);
   let html = `<h2>Liste des contrats</h2><ul>`;
   result.rows.forEach((c) => {
     html += `<li>Contrat ${c.contractnumber || ""} — du ${c.startdate || "?"} au ${c.enddate || "?"}</li>`;
