@@ -20,9 +20,9 @@ app.get("/", (req, res) => {
 });
 
 // --- Page liste des contacts ---
-app.get("/profile/:herokuexternalid__c", async (req, res) => {
-  const { herokuexternalid__c } = req.params;
-  const result = await pool.query("SELECT sfid, herokuexternalid__c, firstname, lastname, email, password__c, phone  FROM salesforce.contact WHERE herokuexternalid__c =$1", [herokuexternalid__c]);
+app.get("/profile/:sfid", async (req, res) => {
+  const { sfid } = req.params;
+  const result = await pool.query("SELECT sfid, herokuexternalid__c, firstname, lastname, email, password__c, phone  FROM salesforce.contact WHERE sfid =$1", [sfid]);
   const c = result.rows[0];
   if (!c) return res.send("Contact non trouvé");
   res.send(`
@@ -32,9 +32,9 @@ app.get("/profile/:herokuexternalid__c", async (req, res) => {
     username : ${c.herokuexternalid__c || ""}<br/>
     Email : ${c.email || ""}<br/>
     Telephone : ${c.phone || ""}<br/>
-    (<a href="/edit/${c.herokuexternalid__c}">Modifier</a>)</p>
+    (<a href="/edit/${c.sfid}">Modifier</a>)</p>
     <div>
-    <button onclick="location.href='/produit'">Produits</button>
+    <button onclick="location.href='/produit/${c.sfid}'">Produits</button>
     <button onclick="location.href='/contract/${c.sfid}'">Contract</button>
     </div>
     <p><a href="/">⬅️ Retour à l'accueil</a></p>
@@ -42,46 +42,77 @@ app.get("/profile/:herokuexternalid__c", async (req, res) => {
 });
 
 // --- Page de modification d’un contact ---
-app.get("/edit/:herokuexternalid__c", async (req, res) => {
-  const { herokuexternalid__c } = req.params;
-  const result = await pool.query("SELECT herokuexternalid__c, firstname, lastname, email, password__c, phone  FROM salesforce.contact WHERE herokuexternalid__c =$1", [herokuexternalid__c]);
+app.get("/edit/:sfid", async (req, res) => {
+  const { sfid } = req.params;
+  const result = await pool.query("SELECT sfid, herokuexternalid__c, firstname, lastname, email, password__c, phone  FROM salesforce.contact WHERE sfid =$1", [sfid]);
   const c = result.rows[0];
   if (!c) return res.send("Contact non trouvé");
   res.send(`
     <h2>Modifier le contact</h2>
-    <form method="POST" action="/edit/${herokuexternalid__c}">
+    <form method="POST" action="/edit/${sfid}">
       <label>Prénom :</label><input name="firstname" value="${c.firstname || ""}" /><br/>
       <label>Nom :</label><input name="lastname" value="${c.lastname || ""}" /><br/>
+      <label>Nom :</label><input name="herokuexternalid__c" value="${c.herokuexternalid__c || ""}" /><br/>
       <label>Nom :</label><input name="password__c" value="${c.password__c || ""}" /><br/>
       <label>Nom :</label><input name="phone" value="${c.phone || ""}" /><br/>
       <label>Email :</label><input name="email" value="${c.email || ""}" /><br/>
       <button type="submit">Enregistrer</button>
     </form>
-    <p><a href="/profile/${c.herokuexternalid__c}">⬅️ Annulez les modifications</a></p>
+    <p><a href="/profile/${c.sfid}">⬅️ Annulez les modifications</a></p>
   `);
 });
 
 // --- Traitement du formulaire contact ---
-app.post("/edit/:herokuexternalid__c", async (req, res) => {
-  const { herokuexternalid__c } = req.params;
-  const { firstname, lastname, email, phone, password__c } = req.body;
+app.post("/edit/:sfid", async (req, res) => {
+  const { sfid } = req.params;
+  const { firstname, lastname, email, phone, password__c, herokuexternalid__c } = req.body;
+  const result = await pool.query("SELECT sfid, herokuexternalid__c, firstname, lastname, email, password__c, phone  FROM salesforce.contact WHERE sfid =$1", [sfid]);
+  const c = result.rows[0];
+
+  try {
+    // Vérifier email
+    const emailCheck = await pool.query(
+      "SELECT id FROM salesforce.contact WHERE email = $1",
+      [email]
+    );
+
+    if (emailCheck.rows.length > 0 && email != c.email) {
+      return res.redirect("/register?error=" + encodeURIComponent("Nouvel email déjà utilisé"));
+    }
+
+    // Vérifier username/herokuexternalid__c
+    const sfidCheck = await pool.query(
+      "SELECT id FROM salesforce.contact WHERE herokuexternalid__c = $1",
+      [herokuexternalid__c]
+    );
+
+    if (sfidCheck.rows.length > 0 && herokuexternalid__c != c.herokuexternalid__c) {
+      return res.redirect("/register?error=" + encodeURIComponent("Nouveau nom d'utilisateur déjà utilisé"));
+    }
+
+  } catch (error) {
+    console.error(error);
+    return res.redirect("/register?error=" + encodeURIComponent("Erreur serveur"));
+  }
+  
   await pool.query(
-    "UPDATE salesforce.contact SET firstname = $1, lastname = $2, email = $3, phone = $5, password__c = $6 WHERE herokuexternalid__c = $4",
-    [firstname, lastname, email, herokuexternalid__c, phone, password__c]
+    "UPDATE salesforce.contact SET firstname = $1, lastname = $2, email = $3, herokuexternalid__c = $4, phone = $5, password__c = $6 WHERE sfid = $7",
+    [firstname, lastname, email, herokuexternalid__c, phone, password__c, sfid]
   );
-  const redirection = "/profile/"+herokuexternalid__c;
+  const redirection = "/profile/"+sfid;
   res.redirect(redirection);
 });
 
 // --- Page liste des produits ---
-app.get("/produit", async (req, res) => {
+app.get("/produit/:sfid", async (req, res) => {
+  const { sfid } = req.params;
   const result = await pool.query("SELECT sfid, name, family FROM salesforce.product2 ORDER BY name ASC");
   let html = `<h2>Liste des produits</h2><ul>`;
   result.rows.forEach((p) => {
     html += `<li>${p.name || "Sans nom"} — ${p.family || "Sans catégorie"}</li>`;
   });
   html += `</ul>
-  <p><a href="/">⬅️ Retour à l'accueil</a></p>`;
+  <p><a href="/profile/${sfid}">⬅️ Retour au profile</a></p>`;
   res.send(html);
 });
 
@@ -94,7 +125,7 @@ app.get("/contract/:sfid", async (req, res) => {
     html += `<li>Contrat ${c.contractnumber || ""} — du ${c.startdate || "?"} au ${c.enddate || "?"}</li>`;
   });
   html += `</ul>
-  <p><a href="/">⬅️ Retour à l'accueil</a></p>`;
+  <p><a href="/profile/${sfid}">⬅️ Retour au profile</a></p>`;
   res.send(html);
 });
 
@@ -217,7 +248,8 @@ app.get("/login", async (req, res) => {
       error = "Identifiants incorrects";
     } else {
         // Connexion OK
-        return res.redirect(`/profile/${username}`);
+        const c = result.rows[0];
+        return res.redirect(`/profile/${c.sfid}`);
       }
     
 
