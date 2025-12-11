@@ -22,44 +22,55 @@ app.get("/", (req, res) => {
 // --- Page liste des contacts ---
 app.get("/profile/:herokuexternalid__c", async (req, res) => {
   const { herokuexternalid__c } = req.params;
-  const result = await pool.query("SELECT sfid, firstname, lastname, email, password__c, Birthdate, phone  FROM salesforce.contact WHERE herokuexternalid__c =$1", [herokuexternalid__c]);
+  const result = await pool.query("SELECT sfid, herokuexternalid__c, firstname, lastname, email, password__c, phone  FROM salesforce.contact WHERE herokuexternalid__c =$1", [herokuexternalid__c]);
   const c = result.rows[0];
   if (!c) return res.send("Contact non trouvé");
   res.send(`
-    <h2>Liste des contacts</h2>
-    <p>Prenom : ${c.firstname || ""} <br>Nom : ${c.lastname || ""}<br>Email : ${c.email || ""}<br>Telephone : ${c.phone || ""}<br>
-    (<a href="/edit/${c.sfid}">Modifier</a>)</p>
+    <h2>Information personnelle : </h2>
+    <p>Prenom : ${c.firstname || ""} <br/>
+    Nom : ${c.lastname || ""}<br/>
+    username : ${c.herokuexternalid__c || ""}<br/>
+    Email : ${c.email || ""}<br/>
+    Telephone : ${c.phone || ""}<br/>
+    (<a href="/edit/${c.herokuexternalid__c}">Modifier</a>)</p>
+    <div>
+    <button onclick="location.href='/produit'">Produits</button>
+    <button onclick="location.href='/contract/${c.sfid}'">Contract</button>
+    </div>
     <p><a href="/">⬅️ Retour à l'accueil</a></p>
     `);
 });
 
 // --- Page de modification d’un contact ---
-app.get("/edit/:sfid", async (req, res) => {
-  const { sfid } = req.params;
-  const result = await pool.query("SELECT sfid, firstname, lastname, email FROM salesforce.contact WHERE sfid = $1", [sfid]);
+app.get("/edit/:herokuexternalid__c", async (req, res) => {
+  const { herokuexternalid__c } = req.params;
+  const result = await pool.query("SELECT herokuexternalid__c, firstname, lastname, email, password__c, phone  FROM salesforce.contact WHERE herokuexternalid__c =$1", [herokuexternalid__c]);
   const c = result.rows[0];
   if (!c) return res.send("Contact non trouvé");
   res.send(`
     <h2>Modifier le contact</h2>
-    <form method="POST" action="/edit/${sfid}">
+    <form method="POST" action="/edit/${herokuexternalid__c}">
       <label>Prénom :</label><input name="firstname" value="${c.firstname || ""}" /><br/>
       <label>Nom :</label><input name="lastname" value="${c.lastname || ""}" /><br/>
+      <label>Nom :</label><input name="password__c" value="${c.password__c || ""}" /><br/>
+      <label>Nom :</label><input name="phone" value="${c.phone || ""}" /><br/>
       <label>Email :</label><input name="email" value="${c.email || ""}" /><br/>
       <button type="submit">Enregistrer</button>
     </form>
-    <p><a href="/contacts">⬅️ Retour à la liste des contacts</a></p>
+    <p><a href="/profile/${c.herokuexternalid__c}">⬅️ Annulez les modifications</a></p>
   `);
 });
 
 // --- Traitement du formulaire contact ---
-app.post("/edit/:sfid", async (req, res) => {
-  const { sfid } = req.params;
-  const { firstname, lastname, email } = req.body;
+app.post("/edit/:herokuexternalid__c", async (req, res) => {
+  const { herokuexternalid__c } = req.params;
+  const { firstname, lastname, email, phone, password__c } = req.body;
   await pool.query(
-    "UPDATE salesforce.contact SET firstname = $1, lastname = $2, email = $3 WHERE sfid = $4",
-    [firstname, lastname, email, sfid]
+    "UPDATE salesforce.contact SET firstname = $1, lastname = $2, email = $3, phone = $5, password__c = $6 WHERE herokuexternalid__c = $4",
+    [firstname, lastname, email, herokuexternalid__c, phone, password__c]
   );
-  res.redirect("/contacts");
+  const redirection = "/profile/"+herokuexternalid__c;
+  res.redirect(redirection);
 });
 
 // --- Page liste des produits ---
@@ -75,8 +86,9 @@ app.get("/produit", async (req, res) => {
 });
 
 // --- Page liste des contrats ---
-app.get("/contract", async (req, res) => {
-  const result = await pool.query("SELECT sfid, contractnumber, startdate, enddate FROM salesforce.contract ORDER BY startdate DESC");
+app.get("/contract/:sfid", async (req, res) => {
+   const { sfid } = req.params;
+  const result = await pool.query("SELECT sfid, contractnumber, startdate, enddate FROM salesforce.contract ORDER BY startdate DESC WHERE CustomerSignedId = $1",[sfid]);
   let html = `<h2>Liste des contrats</h2><ul>`;
   result.rows.forEach((c) => {
     html += `<li>Contrat ${c.contractnumber || ""} — du ${c.startdate || "?"} au ${c.enddate || "?"}</li>`;
