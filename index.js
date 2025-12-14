@@ -19,7 +19,7 @@ app.get("/", (req, res) => {
   res.sendFile("index.html", { root: "public" });
 });
 
-// --- Page liste des contacts ---
+// --- Page info du contact ---
 app.get("/profile/:sfid", async (req, res) => {
   const { sfid } = req.params;
   const result = await pool.query("SELECT sfid, herokuexternalid__c, firstname, lastname, email, password__c, phone  FROM salesforce.contact WHERE sfid =$1", [sfid]);
@@ -44,10 +44,12 @@ app.get("/profile/:sfid", async (req, res) => {
 // --- Page de modification d’un contact ---
 app.get("/edit/:sfid", async (req, res) => {
   const { sfid } = req.params;
+  const { error } = req.query; // Permet d'afficher un message d'erreur
   const result = await pool.query("SELECT sfid, herokuexternalid__c, firstname, lastname, email, password__c, phone  FROM salesforce.contact WHERE sfid =$1", [sfid]);
   const c = result.rows[0];
   if (!c) return res.send("Contact non trouvé");
   res.send(`
+    ${error ? `<p style="color:red;">${error}</p>` : ""}
     <h2>Modifier le contact</h2>
     <form method="POST" action="/edit/${sfid}">
       <label>Prénom :</label><input name="firstname" value="${c.firstname || ""}" /><br/>
@@ -77,7 +79,7 @@ app.post("/edit/:sfid", async (req, res) => {
     );
 
     if (emailCheck.rows.length > 0 && email != c.email) {
-      return res.redirect("/register?error=" + encodeURIComponent("Nouvel email déjà utilisé"));
+      return res.redirect("/profile/"+c.sfid+"?error=" + encodeURIComponent("Nouvel email déjà utilisé"));
     }
 
     // Vérifier username/herokuexternalid__c
@@ -87,20 +89,19 @@ app.post("/edit/:sfid", async (req, res) => {
     );
 
     if (sfidCheck.rows.length > 0 && herokuexternalid__c != c.herokuexternalid__c) {
-      return res.redirect("/register?error=" + encodeURIComponent("Nouveau nom d'utilisateur déjà utilisé"));
+      return res.redirect("/profile/"+c.sfid+"?error=" + encodeURIComponent("Nouveau nom d'utilisateur déjà utilisé"));
     }
 
   } catch (error) {
     console.error(error);
-    return res.redirect("/register?error=" + encodeURIComponent("Erreur serveur"));
+    return res.redirect("/profile/"+c.sfid+"?error=" + encodeURIComponent("Erreur serveur"));
   }
   
   await pool.query(
     "UPDATE salesforce.contact SET firstname = $1, lastname = $2, email = $3, herokuexternalid__c = $4, phone = $5, password__c = $6 WHERE sfid = $7",
     [firstname, lastname, email, herokuexternalid__c, phone, password__c, sfid]
   );
-  const redirection = "/profile/"+sfid;
-  res.redirect(redirection);
+  res.redirect("/profile/"+sfid);
 });
 
 // --- Page liste des produits ---
