@@ -193,21 +193,18 @@ app.post("/register", async (req, res) => {
       return res.redirect("/register?error=" + encodeURIComponent("Nom d'utilisateur déjà utilisé"));
     }
 
-    // Hash du mot de passe
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     // Insertion
     await pool.query(
-      `INSERT INTO salesforce.contact (firstname, lastname, email, herokuexternalid__c, password__c)
+      `INSERT INTO salesforce.contact (firstname, lastname, email, sfid, password__c)
        VALUES ($1, $2, $3, $4, $5)`,
-      [firstname, lastname, email, username, hashedPassword]
+      [firstname, lastname, email, username, password]
     );
 
     return res.redirect("/login");
 
   } catch (error) {
-     console.error("ERREUR SQL :", error.message);
-  return res.redirect("/register?error=" + encodeURIComponent(error.message));;
+    console.error(error);
+    return res.redirect("/register?error=" + encodeURIComponent("Erreur serveur"));
   }
 });
 
