@@ -79,7 +79,7 @@ app.post("/edit/:sfid", async (req, res) => {
     );
 
     if (emailCheck.rows.length > 0 && email != c.email) {
-      return res.redirect("/profile/"+c.sfid+"?error=" + encodeURIComponent("Nouvel email déjà utilisé"));
+      return res.redirect("/edit/"+c.sfid+"?error=" + encodeURIComponent("Nouvel email déjà utilisé"));
     }
 
     // Vérifier username/herokuexternalid__c
@@ -89,12 +89,12 @@ app.post("/edit/:sfid", async (req, res) => {
     );
 
     if (sfidCheck.rows.length > 0 && herokuexternalid__c != c.herokuexternalid__c) {
-      return res.redirect("/profile/"+c.sfid+"?error=" + encodeURIComponent("Nouveau nom d'utilisateur déjà utilisé"));
+      return res.redirect("/edit/"+c.sfid+"?error=" + encodeURIComponent("Nouveau nom d'utilisateur déjà utilisé"));
     }
 
   } catch (error) {
     console.error(error);
-    return res.redirect("/profile/"+c.sfid+"?error=" + encodeURIComponent("Erreur serveur"));
+    return res.redirect("/edit/"+c.sfid+"?error=" + encodeURIComponent("Erreur serveur"));
   }
   
   await pool.query(
