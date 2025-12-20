@@ -195,7 +195,7 @@ app.post("/register", async (req, res) => {
 
     // Insertion
     await pool.query(
-      `INSERT INTO salesforce.contact (firstname, lastname, email, sfid, password__c)
+      `INSERT INTO salesforce.contact (firstname, lastname, email, herokuexternalid__c, password__c)
        VALUES ($1, $2, $3, $4, $5)`,
       [firstname, lastname, email, username, password]
     );
