@@ -206,8 +206,8 @@ app.post("/register", async (req, res) => {
     return res.redirect("/login");
 
   } catch (error) {
-    console.error(error);
-    return res.redirect("/register?error=" + encodeURIComponent("Erreur serveur"));
+     console.error("ERREUR SQL :", error.message);
+  return res.redirect("/register?error=" + encodeURIComponent(error.message));;
   }
 });
 
