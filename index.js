@@ -54,9 +54,9 @@ app.get("/edit/:sfid", async (req, res) => {
     <form method="POST" action="/edit/${sfid}">
       <label>Prénom :</label><input name="firstname" value="${c.firstname || ""}" /><br/>
       <label>Nom :</label><input name="lastname" value="${c.lastname || ""}" /><br/>
-      <label>Nom :</label><input name="herokuexternalid__c" value="${c.herokuexternalid__c || ""}" /><br/>
-      <label>Nom :</label><input name="password__c" value="${c.password__c || ""}" /><br/>
-      <label>Nom :</label><input name="phone" value="${c.phone || ""}" /><br/>
+      <label>Username :</label><input name="herokuexternalid__c" value="${c.herokuexternalid__c || ""}" /><br/>
+      <label>Mot de passe :</label><input name="password__c" value="${c.password__c || ""}" /><br/>
+      <label>Telephone :</label><input name="phone" value="${c.phone || ""}" /><br/>
       <label>Email :</label><input name="email" value="${c.email || ""}" /><br/>
       <button type="submit">Enregistrer</button>
     </form>
