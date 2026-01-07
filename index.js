@@ -155,7 +155,7 @@ app.get("/register", (req, res) => {
       <label>Email :</label>
       <input name="email" type="email" required /><br/>
 
-      <label>Nom d'utilisateur (herokuexternalid__c) :</label>
+      <label>Nom d'utilisateur :</label>
       <input name="username" required /><br/>
 
       <label>Mot de passe :</label>
@@ -221,7 +221,7 @@ app.get("/login", async (req, res) => {
       ${error ? `<p style="color:red;">${error}</p>` : ""}
 
       <form method="GET" action="/login">
-        <label>Nom d'utilisateur (herokuexternalid__c) :</label>
+        <label>Nom d'utilisateur :</label>
         <input name="username" required /><br/>
 
         <label>Mot de passe :</label>
